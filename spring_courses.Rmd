@@ -7,24 +7,54 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+library(readr)
+library(janitor)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+```{r course_enrollment}
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+#The Harvard 2019 spring term data has been read and filtered for only the variables we are looking for. course_id, course_title and u_grad
+#All NAs are removed
 
-```{r cars}
-summary(cars)
+x_2019 <- read_excel("class_enrollment_summary_by_term_3.22.19.xlsx", skip = 3) %>% 
+  clean_names() %>% 
+  filter(! is.na(course_name)) %>% 
+  select(course_id, course_title, course_name, u_grad)
+
+#The Harvard 2018 spring term data has been read and filtered for only the variables we are looking for. course_id, course_title and u_grad
+#All NAs are removed
+
+
+y_2018 <- read_xlsx("class_enrollment_summary_by_term_03.06.18.xlsx", skip = 3) %>% 
+  clean_names() %>% 
+  filter(! is.na(course_name)) %>% 
+  select(course_id, course_title, course_name, u_grad)
 ```
 
-## Including Plots
+```{r join}
+#We now join the two data sets together by using an inner join referencing course_id. Only the courses with with similiar id are included in this new data frame
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+z_joined <- inner_join(x_2019, y_2018, by = "course_id") %>% 
+  
+  #Course titles are the same for both, we only need to select one of the course title names
+  
+  select(course_title.x, course_name.x, u_grad.y, u_grad.x) %>% 
+  
+  #Here we may calculate the change of enrollemnt in the course from Spring 2018 to Spring 2019
+  
+  mutate(change = u_grad.x - u_grad.y) %>%
+  
+  #This takes the absolute value of the change of the class
+  mutate(magnitude = abs(change)) %>% 
+  
+  #This arranged by desc magnitude. We don't care whether the class size increased or decreased, we just want the classes that changed size the most in either direction
+  
+  arrange(desc(magnitude)) %>% 
+  
+  #Only the top 10 classes will be used for our graph
+  
+  slice(1:10)
 ```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
