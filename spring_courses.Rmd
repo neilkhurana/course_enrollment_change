@@ -55,25 +55,43 @@ z_joined <- inner_join(x_2019, y_2018, by = "course_id") %>%
   
   arrange(desc(magnitude)) %>% 
   
-  #Only the top 10 classes will be used for our graph
+  #Only the top 5 classes will be used for our graph
   
-  slice(1:5) %>% 
+  slice(1:5) %>%
+  
+  #No longer need these variables for ggplot
+  
   select(-change, -magnitude, -course_name.x) %>% 
-  melt(id.vars='course_title.x') 
+ 
+  #Great function to separate data for ggplot so it can be computed by year
+   melt(id.vars='course_title.x') 
 ```
 
 
 ```{r final_plot, echo = FALSE}
+
+#Grouped bar graph by course title
 z_graphic <- z_joined %>% 
   ggplot(aes(fill = variable, y= value, x=course_title.x)) + 
     geom_bar(position="dodge", stat="identity") +
+  
+    #Labels included for all axis
+  
     labs(title = "Courses at Harvard with Greatest Change In Enrollment", 
          caption = "Source: Harvard Registrar",
          x = "Course Title",
          y = "Number of Undergraduates Enrolled",
          subtitle = "Diferences between Spring Semester of 2018 & 2019",
          fill = "Spring Semester") +
+  
+  #The theme is used to benter the tile and subtitle
+  
   theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) +
+  
+  #Finally we rename legend and its labels
   scale_fill_discrete(name = "Spring Semester", labels = c("Spring 2018", "Spring 2019"))
+
+#Call graphic
+
 z_graphic
 ```
