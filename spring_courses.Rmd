@@ -11,6 +11,8 @@ library(tidyverse)
 library(readxl)
 library(readr)
 library(janitor)
+library(reshape2)
+library(plyr)
 ```
 
 
@@ -56,5 +58,15 @@ z_joined <- inner_join(x_2019, y_2018, by = "course_id") %>%
   
   #Only the top 10 classes will be used for our graph
   
-  slice(1:10)
+  slice(1:10) %>% 
+```
+
+
+```{r final_plot}
+z_joined %>% 
+  rename(`2019` = u_grad.x, `2018` = u_grad.y) %>% 
+  select(-change, -magnitude, -course_name.x) %>% 
+  melt(id.vars='course_title.x') %>%
+ggplot(aes(fill=variable, y=value, x=course_title.x)) + 
+    geom_bar(position="dodge", stat="identity")
 ```
