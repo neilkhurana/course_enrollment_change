@@ -16,7 +16,7 @@ library(plyr)
 ```
 
 
-```{r course_enrollment}
+```{r course_enrollment, echo = FALSE}
 
 #The Harvard 2019 spring term data has been read and filtered for only the variables we are looking for. course_id, course_title and u_grad
 #All NAs are removed
@@ -36,7 +36,7 @@ y_2018 <- read_xlsx("class_enrollment_summary_by_term_03.06.18.xlsx", skip = 3) 
   select(course_id, course_title, course_name, u_grad)
 ```
 
-```{r join}
+```{r join, echo = FALSE}
 #We now join the two data sets together by using an inner join referencing course_id. Only the courses with with similiar id are included in this new data frame
 
 z_joined <- inner_join(x_2019, y_2018, by = "course_id") %>% 
@@ -59,19 +59,22 @@ z_joined <- inner_join(x_2019, y_2018, by = "course_id") %>%
   #Only the top 10 classes will be used for our graph
   
   slice(1:5) %>% 
-  rename(`2019` = u_grad.x, `2018` = u_grad.y) %>% 
   select(-change, -magnitude, -course_name.x) %>% 
   melt(id.vars='course_title.x') 
 ```
 
 
-```{r final_plot}
+```{r final_plot, echo = FALSE}
 z_graphic <- z_joined %>% 
   ggplot(aes(fill = variable, y= value, x=course_title.x)) + 
     geom_bar(position="dodge", stat="identity") +
-    labs(title = "Courses with Greatest Change In Enrollment", 
+    labs(title = "Courses at Harvard with Greatest Change In Enrollment", 
          caption = "Source: Harvard Registrar",
          x = "Course Title",
-         y = "Number of Undergraduates Enrolled")
+         y = "Number of Undergraduates Enrolled",
+         subtitle = "Diferences between Spring Semester of 2018 & 2019",
+         fill = "Spring Semester") +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) +
+  scale_fill_discrete(name = "Spring Semester", labels = c("Spring 2018", "Spring 2019"))
 z_graphic
 ```
